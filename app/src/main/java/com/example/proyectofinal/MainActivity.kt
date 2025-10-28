@@ -32,6 +32,10 @@ import com.example.proyectofinal.ui.theme.ProyectoFinalTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.DropdownMenu
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 
 fun iconByName(name: String) = when (name) {
     "home" -> Icons.Filled.Home
@@ -52,7 +56,8 @@ val menuOptions = listOf(
     MenuOption("Dashboard", "home"),
     MenuOption("Proyectos", "work"),
     MenuOption("Asistente", "robot_2"),
-    MenuOption("Perfil", "person")
+    MenuOption("Perfil", "person"),
+    MenuOption("Animación", "notifications")
 )
 
 class MainActivity : ComponentActivity() {
@@ -60,30 +65,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MyApp()
-        }
-    }
-}
-
-@Composable
-fun MyApp() {
-    ProyectoFinalTheme {
-        ResponsiveLayout()
-    }
-}
-
-@Composable
-fun ResponsiveLayout() {
-    val configuration = LocalConfiguration.current
-    val isLandscape = configuration.orientation == 2 // 2 is landscape
-
-    // A Scaffold for structured layout
-    Scaffold(
-        topBar = { TopBar() },
-        bottomBar = { BottomBar(isLandscape) }
-    ) { paddingValues ->
-        // Content
-        Box(modifier = Modifier.padding(paddingValues)) {
-            Content()
         }
     }
 }
@@ -133,8 +114,8 @@ fun Content() {
     }
 }
 
-@Composable
-fun BottomBar(isLandscape: Boolean) {
+/*@Composable
+fun BottomBar(isLandscape: Boolean, navController: NavController) {
     val options = menuOptions
 
     val onOptionSelected: (MenuOption) -> Unit = { option ->
@@ -146,7 +127,49 @@ fun BottomBar(isLandscape: Boolean) {
     } else {
         RegularBottomMenu(options = options, onOptionClick = onOptionSelected)
     }
+}*/
+
+@Composable
+fun BottomBar(isLandscape: Boolean, navController: NavController) {
+    val options = menuOptions // Agrega la nueva opción
+
+    if (isLandscape) {
+        DropdownMenu(options = options) { option ->
+            when (option.label) {
+                "Dashboard" -> navController.navigate("home")
+                "Proyectos" -> navController.navigate("home") // temporal
+                "Asistente" -> navController.navigate("home")
+                "Perfil" -> navController.navigate("home")
+                "Animación" -> navController.navigate("animacion")
+            }
+        }
+    } else {
+        NavigationBar {
+            options.forEach { option ->
+                NavigationBarItem(
+                    selected = false, // puedes hacer que detecte cuál está activa
+                    onClick = {
+                        when (option.label) {
+                            "Dashboard" -> navController.navigate("home")
+                            "Proyectos" -> navController.navigate("home")
+                            "Asistente" -> navController.navigate("home")
+                            "Perfil" -> navController.navigate("home")
+                            "Animación" -> navController.navigate("animacion")
+                        }
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = iconByName(option.iconName),
+                            contentDescription = option.label
+                        )
+                    },
+                    label = { Text(option.label) }
+                )
+            }
+        }
+    }
 }
+
 
 @Composable
 fun RegularBottomMenu(options: List<MenuOption>, onOptionClick: (MenuOption) -> Unit) {
@@ -195,10 +218,52 @@ fun DropdownMenu(options: List<MenuOption>, onOptionClick: (MenuOption) -> Unit)
     }
 }
 
+@Composable
+fun MyApp() {
+    ProyectoFinalTheme {
+        val configuration = LocalConfiguration.current
+        val isLandscape = configuration.orientation == 2
+        val navController = rememberNavController()
+
+        Scaffold(
+            topBar = { TopBar() },
+            bottomBar = { BottomBar(isLandscape, navController) }
+        ) { paddingValues ->
+            Box(modifier = Modifier.padding(paddingValues)) {
+                NavHost(
+                    navController = navController,
+                    startDestination = "home"
+                ) {
+                    composable("home") { Content() }
+                    composable("animacion") { AnimacionScreen() }
+                }
+            }
+        }
+    }
+}
+
+/*@Composable
+fun ResponsiveLayout() {
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == 2 // 2 is landscape
+
+    // A Scaffold for structured layout
+    Scaffold(
+        topBar = { TopBar() },
+        bottomBar = { BottomBar(isLandscape) }
+    ) { paddingValues ->
+        // Content
+        Box(modifier = Modifier.padding(paddingValues)) {
+            Content()
+        }
+    }
+}*/
 
 
+/*
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
     MyApp()
 }
+*/

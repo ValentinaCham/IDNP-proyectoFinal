@@ -1,4 +1,4 @@
-# Visor Cívico
+ # Visor Cívico
 
 **Aplicación móvil en Jetpack Compose para fortalecer la participación ciudadana en Arequipa, Perú.**
 
