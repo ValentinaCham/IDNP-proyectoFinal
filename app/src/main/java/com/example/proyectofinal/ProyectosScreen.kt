@@ -107,7 +107,9 @@ fun AddProyectoDialog(onDismiss: () -> Unit, onConfirm: (Proyecto) -> Unit) {
             Column {
                 OutlinedTextField(value = nombreInversion, onValueChange = { nombreInversion = it }, label = { Text("Nombre Inversión") })
                 OutlinedTextField(value = situacion, onValueChange = { situacion = it }, label = { Text("Situación") })
+                OutlinedTextField(value = cadenaFuncional, onValueChange = { cadenaFuncional = it }, label = { Text("Cadena Funcional") })
                 OutlinedTextField(value = cUnico, onValueChange = { cUnico = it }, label = { Text("Código Único") })
+                OutlinedTextField(value = cTotalInvViable, onValueChange = { cTotalInvViable = it }, label = { Text("Inversión Viable") })
             }
         },
         confirmButton = {
