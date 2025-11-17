@@ -1,10 +1,12 @@
 package com.example.proyectofinal
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Work
@@ -13,25 +15,44 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.proyectofinal.ui.theme.ProyectoFinalTheme
+import kotlinx.coroutines.launch
+
+class ThemeViewModel(private val themeDataStore: ThemeDataStore) : ViewModel() {
+    val isDarkMode = themeDataStore.isDarkMode
+
+    fun saveTheme(isDarkMode: Boolean) {
+        viewModelScope.launch {
+            themeDataStore.saveTheme(isDarkMode)
+        }
+    }
+}
 
 @Composable
 fun MenuScreen() {
-    ProyectoFinalTheme {
+    val context = LocalContext.current
+    val themeDataStore = remember { ThemeDataStore(context) }
+    val themeViewModel: ThemeViewModel = remember { ThemeViewModel(themeDataStore) }
+    val isDarkMode by themeViewModel.isDarkMode.collectAsState(initial = isSystemInDarkTheme())
+
+    ProyectoFinalTheme(darkTheme = isDarkMode) {
         val configuration = LocalConfiguration.current
         val isLandscape = configuration.orientation == 2
         val navController = rememberNavController()
 
         Scaffold(
-            topBar = { TopBar() },
+            topBar = { TopBar(themeViewModel) },
             bottomBar = { BottomBar(isLandscape, navController) }
         ) { paddingValues ->
             Box(modifier = Modifier.padding(paddingValues)) {
@@ -50,7 +71,10 @@ fun MenuScreen() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar() {
+fun TopBar(themeViewModel: ThemeViewModel) {
+    var showMenu by remember { mutableStateOf(false) }
+    val isDarkMode by themeViewModel.isDarkMode.collectAsState(initial = isSystemInDarkTheme())
+
     TopAppBar(
         title = {
             Text(
@@ -58,9 +82,18 @@ fun TopBar() {
                 style = MaterialTheme.typography.titleLarge
             )
         },
+        actions = {
+            IconButton(onClick = { showMenu = !showMenu }) {
+                Icon(Icons.Default.MoreVert, contentDescription = "Theme options")
+            }
+            DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                DropdownMenuItem(text = { Text("Light Mode") }, onClick = { themeViewModel.saveTheme(false) ; showMenu = false })
+                DropdownMenuItem(text = { Text("Dark Mode") }, onClick = { themeViewModel.saveTheme(true) ; showMenu = false })
+            }
+        },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primary, // Fondo del TopAppBar
-            titleContentColor = MaterialTheme.colorScheme.onPrimary // Color del texto
+            containerColor = MaterialTheme.colorScheme.primary,
+            titleContentColor = MaterialTheme.colorScheme.onPrimary
         )
     )
 }
@@ -80,15 +113,12 @@ fun Content() {
             style = TextStyle(
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.surface
+                color = MaterialTheme.colorScheme.onSurface
             ),
             modifier = Modifier.padding(bottom = 16.dp)
         )
         Button(
-            onClick = {
-                // print in logcat the name
-                println("Haz clic en el botón")
-            },
+            onClick = { /* Acción del botón */ },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Haz clic aquí")
